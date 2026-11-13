@@ -1,0 +1,36 @@
+/* Страницы «Автокредит», «Рассрочка», «Trade-In», «Акции», «О компании», «Контакты», документы.
+   Стили оригинала лежат в origin.css, здесь только замены для частей, которые у оригинала рисует Vue,
+   и раскладка ячейки «кнопка + согласия» нашей формы заявки (lead_form) в шаге «3». */
+
+/* Шаг «3» (fieldset из lead_form с классами оригинала, сетку и цифру «3» даёт origin.css): у оригинала
+   согласия — отдельная четвёртая ячейка, у нас они в одной ячейке с кнопкой, поэтому она на две колонки */
+@media screen and (min-width: 900px) {
+  .form-new__block--3 > .form__control:last-child {
+    grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; align-items: start;
+  }
+  .form-new__block--3 .checkbox { margin-top: 0; }
+  .form-new__block--3 .form__control-error { position: absolute; top: -18px; left: 0; margin: 0; white-space: nowrap; }
+}
+@media screen and (min-width: 1190px) {
+  .form-new__block--3 > .form__control:last-child { align-items: center; }
+}
+@media screen and (min-width: 1250px) {
+  .form-new__block--3 > .form__control:last-child { column-gap: 18px; }
+}
+
+/* Списки «Марка», «Модель», «Комплектация» (компонент Select оригинала), меню открывает info.js */
+.select-wrapper .select__item--desktop { cursor: pointer; user-select: none; }
+.select-wrapper--no-data .select__item--desktop { cursor: default; }
+.select-wrapper .select__item--mobile:disabled { color: #000; opacity: 1; cursor: default; }
+.select--mobile .js-select-arrow { pointer-events: none; }
+.select-wrapper .js-select-clear { cursor: pointer; }
+.select__modal-option:focus-visible { outline: none; color: var(--color-element); }
+
+/* Ползунки калькулятора (разметка vueform/slider), двигает info.js */
+.calculator__slider { cursor: pointer; }
+.calculator__slider .slider-handle { cursor: grab; }
+.calculator__slider .slider-state-drag .slider-handle { cursor: grabbing; }
+.calculator__slider .slider-handle:focus-visible { outline: 2px solid var(--color-element); outline-offset: 2px; }
+
+/* Фото «О компании»: карусель app.js; отступы site.css для теней карточек внутри рамки 4:3 не нужны */
+.slider-about.js-carousel .f-carousel__viewport { padding-block: 0; margin-block: 0; }

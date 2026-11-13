@@ -1,0 +1,67 @@
+/* Правки для страниц марки, модели, автомобиля и подборок поверх стилей оригинала (origin.css).
+   Оригинал рисует часть элементов Vue-компонентами и Fancybox, здесь стили для их замен из car.js. */
+
+/* Галерея автомобиля: без вертикальных отступов карусели из site.css, превью прокручиваются */
+.offer__slider-desktop .js-carousel .f-carousel__viewport { padding-block: 0; margin-block: 0; }
+.offer__slider-desktop .f-thumbs__viewport { overflow-y: auto; scrollbar-width: none; scroll-behavior: smooth; }
+.offer__slider-desktop .f-thumbs__viewport::-webkit-scrollbar { display: none; }
+.offer__slider-line { scroll-snap-type: x mandatory; }
+.offer__slider-line-slide { scroll-snap-align: start; }
+.js-lightbox { cursor: zoom-in; }
+
+/* Бонусы: checkbox внутри плашки скрыт стилями оригинала; держим его в плашке, чтобы фокус
+   не уводил прокрутку ленты бонусов, и показываем рамку при выборе с клавиатуры */
+.switch .switch__checkbox { top: 0; left: 0; margin: 0; opacity: 0; pointer-events: none; }
+.switch:has(.switch__checkbox:focus-visible) { outline: 2px solid var(--color-element); outline-offset: 2px; }
+.switch { cursor: pointer; }
+
+/* Комплектации: значок и кнопка сравнения */
+.folders__item-complectation-compare:focus-visible { outline: 2px solid var(--color-element); outline-offset: 2px; }
+.folders__item-modifications-comparison { display: flex; align-items: center; cursor: pointer; white-space: nowrap; z-index: 3; }
+@media (min-width: 1250px) { .folders__item-modifications-comparison { padding-top: 0; padding-bottom: 0; } }
+
+/* Калькулятор: ползунок без отступов фильтра каталога (site.css), тянуть можно по всей полосе */
+.calculator__slider.range .slider-target { margin: 0; }
+.calculator__slider { cursor: pointer; touch-action: pan-y; }
+.calculator__slider .slider-handle { cursor: grab; touch-action: none; }
+.calculator__slider .slider-state-drag .slider-handle { cursor: grabbing; }
+
+/* Оборудование на странице автомобиля: разделы друг под другом, остальные раскрываются кнопкой */
+.offer__equipment--car { margin-top: 64px; }
+@media screen and (min-width: 1250px) { .offer__equipment--car { margin-top: 80px; } }
+.offer__equipment-group { margin-top: 24px; }
+.offer__equipment-group .offer__equipment-block { width: 100%; margin-top: 0; }
+.offer__equipment .button--more { width: fit-content; padding: 0 32px; }
+
+/* Окно с оборудованием комплектации */
+.modal--equipment .folders__item-modal-blocks { padding: 16px 16px 0; }
+.modal--equipment .folders__item-modal-values { margin-top: 0; }
+.modal--equipment .folders__item-complectation-buttons { margin-top: 8px; }
+.modal--equipment .folders__item-complectation-buttons .button { height: 48px; font-size: 14px; }
+
+/* Список подборок /sets: в сетке плитка растёт по картинке, чтобы не наезжать на следующий ряд */
+.sets--list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.sets--list .sets__item { height: auto; min-height: 160px; }
+@media (min-width: 900px) { .sets--list { grid-template-columns: repeat(4, 1fr); gap: 40px; } }
+
+/* Модель без цены: карточка той же высоты, что и с ценой */
+.mini-card__price-wrapper--new:empty { min-height: 24px; }
+
+/* Просмотр фото на весь экран (у оригинала Fancybox) */
+.car-lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .9); }
+.car-lightbox[hidden] { display: none; }
+.car-lightbox__img { max-width: calc(100% - 32px); max-height: calc(100% - 112px); object-fit: contain; user-select: none; }
+@media (min-width: 900px) { .car-lightbox__img { max-width: calc(100% - 176px); } }
+.car-lightbox__close, .car-lightbox__nav { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; }
+.car-lightbox__close { top: 16px; right: 16px; width: 40px; height: 40px; }
+.car-lightbox__close::before, .car-lightbox__close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 28px; height: 2px; background: #fff; }
+.car-lightbox__close::before { transform: translate(-50%, -50%) rotate(45deg); }
+.car-lightbox__close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+.car-lightbox__nav { top: 50%; width: 56px; height: 72px; transform: translateY(-50%); }
+.car-lightbox__nav::before { content: ""; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; border-top: 2px solid #fff; border-left: 2px solid #fff; }
+.car-lightbox__nav--prev { left: 8px; }
+.car-lightbox__nav--prev::before { transform: translate(-30%, -50%) rotate(-45deg); }
+.car-lightbox__nav--next { right: 8px; }
+.car-lightbox__nav--next::before { transform: translate(-70%, -50%) rotate(135deg); }
+.car-lightbox__close:focus-visible, .car-lightbox__nav:focus-visible { outline: 2px solid var(--color-element); }
+.car-lightbox__count { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; }

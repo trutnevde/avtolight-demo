@@ -1,0 +1,63 @@
+/* Наши правки поверх стилей оригинала (origin.css). Оригинал рисует часть элементов своими
+   Vue-компонентами, здесь стили для их замен: карусели на прокрутке, обычные select, ползунок цены. */
+
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+
+/* Карусели: вместо Fancybox прокрутка со снапом, стрелки и точки добавляет app.js */
+.js-carousel .f-carousel__viewport {
+  overflow-x: auto !important; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  scrollbar-width: none; -ms-overflow-style: none; padding-block: 12px; margin-block: -12px;
+}
+.js-carousel .f-carousel__viewport::-webkit-scrollbar { display: none; }
+.js-carousel .f-carousel__slide { scroll-snap-align: start; }
+.js-carousel .f-carousel__track { width: auto; }
+.f-carousel__nav .f-button { cursor: pointer; border: 0; }
+.f-carousel__nav .f-button[disabled] { opacity: .35; cursor: default; }
+.f-carousel__dots li button { cursor: pointer; }
+
+/* Главный слайдер: один слайд, переключение без прокрутки */
+.js-hero .f-carousel__viewport { overflow: visible; }
+.js-hero .f-carousel__slide { width: 100%; flex: 0 0 100%; animation: hero-in .4s ease; }
+@keyframes hero-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Шапка: при прокрутке белая с тенью, как у оригинала */
+.header.scroll--header-on .header__top { background: #fff; }
+.header__call-button { display: none; }
+@media (max-width: 900px) {
+  .header__call-button { display: flex; align-items: center; }
+}
+
+/* Фильтры каталога на обычных select в форме «пилюли» оригинала */
+.select--native { position: relative; display: block !important; width: 100%; }
+.select--native .select__item {
+  display: block; width: 100%; appearance: none; -webkit-appearance: none; background: #fff;
+  padding: 0 40px 0 16px; font-family: Gothampro, sans-serif; font-size: 16px; color: #000; cursor: pointer;
+  text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+}
+.select--native .select__item:disabled { cursor: default; color: #919399; }
+.select--native .nuxt-icon {
+  position: absolute; right: 19px; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex;
+}
+.select--native .nuxt-icon svg { width: 12px; height: 8px; }
+.select--native .nuxt-icon svg * { stroke: #000 !important; fill: none !important; }
+.catalog__sort select, .catalog__controls select { cursor: pointer; }
+
+/* Ползунок цены: разметка vueform/slider оригинала, двигает app.js */
+.range .slider-target { margin: 8px 11px 32px; }
+.range .slider-origin { transform-origin: 0 0; }
+.range .slider-handle { cursor: grab; touch-action: none; }
+.range .slider-tooltip { white-space: nowrap; }
+
+/* Карта в блоке контактов */
+.contacts__map-frame { display: block; width: 100%; height: 100%; min-height: 410px; border: 0; }
+@media (max-width: 949px) { .contacts__map-frame { min-height: 0; aspect-ratio: 1 / 1; height: auto; } }
+
+/* Окно заявки и ошибки формы */
+body.menu-is-open { overflow: hidden; }
+.modal--open .modal__overflow { display: block; }
+.form__control-error { position: static; margin-bottom: 8px; color: #e23232; font-size: 12px; white-space: normal; }
+.js-lead-form.is-sending button[type="submit"] { opacity: .6; pointer-events: none; }
+.services__item[role="button"], [data-modal] { cursor: pointer; }
+.catalog__empty { margin: 24px 0; }
+.mini-card__slider-desktop img { display: block; }
