@@ -74,6 +74,34 @@
   }
   function offerName() { return state.title ? state.name + " " + state.title : state.name; }
 
+  /* Цена и платёж «набегают» за 0,5 с от прежнего значения к новому, при загрузке от нуля,
+     как у оригинала (у них anime.js: easeInOutQuad, округление до рубля). */
+  var anim = { shown: 0, raf: 0 };
+  function animatePrice(to) {
+    var priceEl = $(".js-price-actual", car), creditEl = $(".js-price-credit", car);
+    if (!priceEl && !creditEl) return;
+    function paint(v) {
+      if (priceEl) priceEl.textContent = rub(v);
+      if (creditEl) creditEl.textContent = rub(annuity(v)) + "/мес.";
+    }
+    cancelAnimationFrame(anim.raf);
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      anim.shown = to;
+      paint(to);
+      return;
+    }
+    var from = anim.shown, t0 = null;
+    function frame(ts) {
+      if (t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / 500);
+      var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      anim.shown = Math.round(from + (to - from) * e);
+      paint(anim.shown);
+      if (k < 1) anim.raf = requestAnimationFrame(frame);
+    }
+    anim.raf = requestAnimationFrame(frame);
+  }
+
   /* Выгода = старая цена минус цена, делится между переключателями по data-share.
      Показанная цена = цена со всеми скидками плюс выключенные скидки, как у оригинала. */
   function updateCar() {
@@ -87,10 +115,7 @@
     var actual = state.price + off;
     var el = $(".js-benefit", car);
     if (el) el.textContent = rub(on);
-    el = $(".js-price-actual", car);
-    if (el) el.textContent = rub(actual);
-    el = $(".js-price-credit", car);
-    if (el) el.textContent = rub(annuity(actual)) + "/мес.";
+    animatePrice(actual);
     $$(".js-car-offer", car).forEach(function (btn) {
       btn.setAttribute("data-offer", (btn.getAttribute("data-prefix") || "") + offerName());
       if (btn.hasAttribute("data-offer-price")) btn.setAttribute("data-offer-price", actual);

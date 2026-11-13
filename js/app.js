@@ -131,37 +131,88 @@
     promo: ["Узнать <span>подробнее</span>", "Расскажем об условиях акции."],
     question: ["Задать <span>вопрос</span>", ""]
   };
-  var modal = $("#lead-modal");
-  function openModal(kind, btn) {
+  var modal = $("#lead-modal"), promoModal = $("#promo-modal");
+  function showModal(m) {
+    m.classList.add("modal--open");
+    m.setAttribute("aria-hidden", "false");
+    $(".js-modal-overflow").hidden = false;
+    document.body.classList.add("menu-is-open");
+  }
+  /* opts (необязательно): title, text, button, offer, comment — для акций со своими заголовками */
+  function openModal(kind, btn, opts) {
     if (!modal) return;
+    opts = opts || {};
     var m = MODALS[kind] || MODALS.callback;
-    $(".js-modal-title", modal).innerHTML = m[0];
-    var offer = btn && btn.getAttribute("data-offer");
-    $(".js-modal-text", modal).textContent = offer ? offer.trim() : m[1];
+    $(".js-modal-title", modal).innerHTML = opts.title || m[0];
+    var offer = opts.offer || (btn && btn.getAttribute("data-offer"));
+    $(".js-modal-text", modal).textContent = opts.text !== undefined ? opts.text : offer ? offer.trim() : m[1];
     var form = $("form", modal);
     form.elements.kind.value = MODALS[kind] ? kind : "callback";
     form.elements.offer.value = offer ? offer.trim() : "";
     form.elements.page.value = (btn && btn.getAttribute("data-offer-url")) || location.pathname + location.search;
+    var submit = $("button[type=submit]", form);
+    if (!submit.hasAttribute("data-default")) submit.setAttribute("data-default", submit.textContent.trim());
+    submit.textContent = opts.button || submit.getAttribute("data-default");
+    var comment = form.elements.comment;
+    if (!comment) {
+      comment = document.createElement("input");
+      comment.type = "hidden";
+      comment.name = "comment";
+      form.appendChild(comment);
+    }
+    comment.value = opts.comment || "";
     $$(".js-form-error", form).forEach(function (e) { e.hidden = true; });
-    modal.classList.add("modal--open");
-    modal.setAttribute("aria-hidden", "false");
-    $(".js-modal-overflow").hidden = false;
-    document.body.classList.add("menu-is-open");
+    showModal(modal);
     setTimeout(function () { var f = form.elements.name; if (f) f.focus(); }, 50);
   }
   function closeModal() {
-    if (!modal) return;
-    modal.classList.remove("modal--open");
-    modal.setAttribute("aria-hidden", "true");
-    $(".js-modal-overflow").hidden = true;
+    $$(".modal.modal--open").forEach(function (m) {
+      m.classList.remove("modal--open");
+      m.setAttribute("aria-hidden", "true");
+    });
+    var ov = $(".js-modal-overflow");
+    if (ov) ov.hidden = true;
     if (!header.classList.contains("header--menu-open")) document.body.classList.remove("menu-is-open");
   }
+
+  /* ---------- акции автоцентра: тексты и поведение как у оригинала ---------- */
+  var SALE = SITE.sale || {};
+  var PROMOS = {
+    "оплатим дорогу": { text: "Сохраните чеки, квитанции и билеты, и мы возместим затраты на дорогу. Ваша комфортная покупка - наша забота!" },
+    "подарок на выбор": { text: "При покупке любого нового автомобиля из наличия мы предлагаем покупателям подарок на выбор — КАСКО или комплект резины, чтобы вы чувствовали себя уверенно на дороге!" },
+    "автокредит": { express: true, text: "Оставьте заявку, и наш менеджер составит для вас индивидуальное предложение с максимальной выгодой!" },
+    "первый автомобиль": { express: true, title: "Узнать <span>условия</span>", button: "Узнать условия",
+      text: "Больше не нужно копить на свой первый автомобиль. Можно оформить его прямо сейчас со скидкой " + SALE.first_car + "! Подробности у менеджера салона." },
+    "госпрограмма": { express: true, title: "Узнать <span>условия</span>", button: "Узнать условия",
+      text: "Скидка " + SALE.gos + " на семейный автомобиль. Звоните, наши менеджеры расскажут вам условия участия в программе." },
+    "trade-in": { express: true, title: "Оставить <span>заявку</span>", button: "Оставить заявку",
+      text: "Предлагаем выгоду до " + SALE.exchange + ". Оценка автомобиля, выкуп и сопровождение по сделке абсолютно бесплатны." }
+  };
+  /* «Оплатим дорогу» и «Подарок на выбор» — окно с текстом; остальные — форма заявки со своим заголовком и кнопкой */
+  function openPromo(tile) {
+    var h = $(".services__title", tile);
+    var name = h ? h.textContent.trim() : "";
+    var p = PROMOS[name.toLowerCase()];
+    if (!p) return false;
+    if (p.express) {
+      openModal("promo", null, { title: p.title || "Получить <span>предложение</span>", text: "",
+        button: p.button || "Получить предложение", offer: "Акция: " + name, comment: p.text });
+    } else if (promoModal) {
+      $(".js-promo-title", promoModal).textContent = name;
+      $(".js-promo-text", promoModal).textContent = p.text;
+      showModal(promoModal);
+    }
+    return true;
+  }
+
   document.addEventListener("click", function (e) {
+    var tile = e.target.closest(".services__item");
+    if (tile && openPromo(tile)) { e.preventDefault(); return; }
     var b = e.target.closest("[data-modal]");
     if (b) { e.preventDefault(); openModal(b.getAttribute("data-modal"), b); return; }
     if (e.target.closest(".js-modal-close")) closeModal();
     /* щелчок мимо окна: окно и его обёртка занимают весь экран поверх подложки */
-    else if (modal && (e.target === modal || e.target.classList.contains("modal__window"))) closeModal();
+    else if (e.target.classList.contains("modal") || e.target.classList.contains("modal__window")) closeModal();
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeModal(); toggleMenu(false); } });
 
@@ -234,6 +285,59 @@
     var on = w.classList.toggle("filter__wrapper--active");
     $("span", ft).textContent = on ? "− Скрыть фильтры" : "+ Показать фильтры";
   });
+  /* Фильтр: в списках только варианты, при которых найдётся машина с остальными выбранными фильтрами
+     и ценой (у JAECOO нет пикапов — пикап не выбрать). Машины — window.CATALOG_POOL из app.py:
+     items [марка, модель, кузов, КПП, двигатель, привод, цена], t — подписи. Модель не сужает список
+     марок, а при смене марки чужая модель сбрасывается. Тот же расчёт на сервере — facet_options. */
+  var DIMS = ["mark", "model", "body", "gearbox", "engine", "drive"];
+  var DIM_LABELS = ["Марка", "Модель", "Кузов", "КПП", "Двигатель", "Привод"];
+  function priceBounds(form) {
+    var r = $(".js-range", form), el = form.elements;
+    var min = r ? +r.getAttribute("data-min") : 0, max = r ? +r.getAttribute("data-max") : 0;
+    var from = el.price_from ? +digits(el.price_from.value) : 0, to = el.price_to ? +digits(el.price_to.value) : 0;
+    return [from > min ? from : 0, to && to < max ? to : 0];   /* цена по краю диапазона — не фильтр */
+  }
+  function refreshFacets(form, init) {
+    var pool = window.CATALOG_POOL, el = form.elements;
+    if (!pool || !pool.items) return;
+    var sel = DIMS.map(function (d) { return init ? init[d] || "" : el[d] ? el[d].value : ""; });
+    var price = priceBounds(form);
+    if (sel[1] && !pool.items.some(function (r) { return r[0] === sel[0] && r[1] === sel[1]; })) sel[1] = "";
+    DIMS.forEach(function (d, i) {
+      var box = el[d];
+      if (!box) return;
+      var vals = {};
+      if (i !== 1 || sel[0]) pool.items.forEach(function (r) {
+        if ((price[0] && r[6] < price[0]) || (price[1] && r[6] > price[1])) return;
+        for (var j = 0; j < 6; j++) if (j !== i && !(i === 0 && j === 1) && sel[j] && r[j] !== sel[j]) return;
+        if (r[i]) vals[r[i]] = true;
+      });
+      if (sel[i]) vals[sel[i]] = true;   /* выбранное не прячем, даже если по цене машин не осталось */
+      var titles = pool.t[d] || {};
+      var opts = Object.keys(vals).map(function (v) {
+        return [v, (i === 1 ? titles[sel[0] + "/" + v] : titles[v]) || v];
+      }).sort(function (a, b) {
+        var x = a[1].toLowerCase(), y = b[1].toLowerCase();
+        return x < y ? -1 : x > y ? 1 : 0;
+      });
+      box.length = 0;
+      box.add(new Option(DIM_LABELS[i], ""));
+      opts.forEach(function (o) { box.add(new Option(o[1], o[0])); });
+      box.value = sel[i];
+      if (i === 1) {
+        box.disabled = !sel[0];
+        box.parentNode.classList.toggle("select-wrapper--no-data", !sel[0]);
+      }
+    });
+  }
+  $$(".js-filter").forEach(function (form) {
+    form.addEventListener("change", function (e) {
+      /* другая марка — модель с начала, даже если у новой марки есть модель с тем же адресом (J7 у JAECOO и JAC) */
+      if (e.target.name === "mark" && form.elements.model) form.elements.model.value = "";
+      if (e.target.classList.contains("js-facet")) refreshFacets(form);
+    });
+    form.addEventListener("range-change", function () { refreshFacets(form); });
+  });
   if (STATIC) staticCatalog();
   if (!STATIC) $$(".js-autosubmit").forEach(function (s) {
     s.addEventListener("change", function () {
@@ -273,6 +377,8 @@
     if (!slider || !(max > min)) { if (slider) slider.hidden = true; return; }
     var origins = $$(".slider-origin", slider), connect = $(".slider-connect", slider);
     var vals = [Math.max(min, +digits(from.value) || min), Math.min(max, +digits(to.value) || max)];
+    /* новая цена — фильтр пересчитывает списки (refreshFacets) */
+    function changed() { r.dispatchEvent(new CustomEvent("range-change", { bubbles: true })); }
     function pct(v) { return (v - min) / (max - min) * 100; }
     function render() {
       origins.forEach(function (o, k) {
@@ -296,6 +402,7 @@
       function up() {
         document.removeEventListener("pointermove", move);
         document.removeEventListener("pointerup", up);
+        changed();
       }
       document.addEventListener("pointermove", move);
       document.addEventListener("pointerup", up);
@@ -311,6 +418,7 @@
         v = Math.max(min, Math.min(max, v));
         vals[k] = k === 0 ? Math.min(v, vals[1]) : Math.max(v, vals[0]);
         render();
+        changed();
       });
     });
     render();
@@ -319,32 +427,19 @@
   /* ---------- демо без сервера: фильтры и сортировка каталога в браузере ---------- */
   function staticCatalog() {
     var form = $(".js-filter");
-    var grid = $(".section--catalog .catalog__grid");
+    var grid = $("#catalog .catalog__grid");
     if (!form || !grid) return;
     var cards = $$(".mini-card", grid);
     var empty = $(".js-static-empty");
-    var sortSel = $(".js-sort");
-    var marks = window.CATALOG_MARKS || {};
+    var sorts = $$(".js-sort");
+    var sortKey = "new";
     var el = form.elements;
-    var range = $(".js-range", form);
-    var min = range ? +range.getAttribute("data-min") : 0, max = range ? +range.getAttribute("data-max") : 0;
     function val(name) { return el[name] ? el[name].value : ""; }
-    function fillModels(mark, value) {
-      var m = el.model;
-      if (!m) return;
-      m.innerHTML = '<option value="">Модель</option>';
-      (marks[mark] || []).forEach(function (f) { m.add(new Option(f[1], f[0])); });
-      m.disabled = !mark;
-      m.parentNode.classList.toggle("select-wrapper--no-data", !mark);
-      if (value) m.value = value;
-    }
     function apply(push) {
       var mark = val("mark"), model = val("model"), gearbox = val("gearbox"), engine = val("engine"), drive = val("drive");
       /* у карточек кузов подписан названием, а в списке у варианта имя: сравниваем по тексту */
       var body = el.body && el.body.value ? el.body.options[el.body.selectedIndex].text.trim() : "";
-      var from = +digits(val("price_from")) || 0, to = +digits(val("price_to")) || 0;
-      if (from <= min) from = 0;
-      if (to >= max) to = 0;
+      var price = priceBounds(form), from = price[0], to = price[1];
       var shown = 0;
       cards.forEach(function (c) {
         var d = c.dataset, p = +d.price;
@@ -354,29 +449,37 @@
         c.hidden = !ok;
         if (ok) shown++;
       });
-      var key = sortSel ? sortSel.value : "new";
       cards.slice().sort(function (a, b) {
-        if (key === "cheap") return a.dataset.price - b.dataset.price;
-        if (key === "expensive") return b.dataset.price - a.dataset.price;
+        if (sortKey === "cheap") return a.dataset.price - b.dataset.price;
+        if (sortKey === "expensive") return b.dataset.price - a.dataset.price;
         return b.dataset.id - a.dataset.id;
       }).forEach(function (c) { grid.appendChild(c); });
       if (empty) empty.hidden = shown > 0;
       if (push) {
         var q = new URLSearchParams();
         [["mark", mark], ["model", model], ["body", val("body")], ["gearbox", gearbox], ["engine", engine],
-         ["drive", drive], ["price_from", from || ""], ["price_to", to || ""], ["sort", key !== "new" ? key : ""]]
+         ["drive", drive], ["price_from", from || ""], ["price_to", to || ""], ["sort", sortKey !== "new" ? sortKey : ""]]
           .forEach(function (kv) { if (kv[1]) q.set(kv[0], kv[1]); });
         history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : ""));
       }
     }
     form.addEventListener("submit", function (e) { e.preventDefault(); apply(true); });
-    if (el.mark) el.mark.addEventListener("change", function () { fillModels(el.mark.value); apply(true); });
-    if (sortSel) sortSel.addEventListener("change", function () { apply(true); });
-    /* фильтры из адреса: ссылки вида ?mark=haval работают и в демо */
+    /* марка применяется сразу, как на сайте с сервером; списки к этому времени уже пересчитаны */
+    form.addEventListener("change", function (e) { if (e.target.name === "mark") apply(true); });
+    sorts.forEach(function (s) {
+      s.addEventListener("change", function () {
+        sortKey = s.value;
+        sorts.forEach(function (o) { if (o !== s) o.value = sortKey; });
+        apply(true);
+      });
+    });
+    /* фильтры из адреса: ссылки вида ?mark=haval&body=crossover работают и в демо */
     var q = new URLSearchParams(location.search);
-    if (el.mark && q.get("mark")) { el.mark.value = q.get("mark"); fillModels(q.get("mark"), q.get("model")); }
-    ["body", "gearbox", "engine", "drive"].forEach(function (k) { if (el[k] && q.get(k)) el[k].value = q.get(k); });
-    if (sortSel && q.get("sort")) sortSel.value = q.get("sort");
+    ["price_from", "price_to"].forEach(function (k) { if (el[k] && q.get(k)) el[k].value = q.get(k); });
+    var init = {};
+    DIMS.forEach(function (d) { init[d] = q.get(d) || ""; });
+    refreshFacets(form, init);
+    if (q.get("sort")) { sortKey = q.get("sort"); sorts.forEach(function (s) { s.value = sortKey; }); }
     apply(false);
   }
 
