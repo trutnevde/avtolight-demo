@@ -49,6 +49,22 @@ img { max-width: 100%; }
 .range .slider-handle { cursor: grab; touch-action: none; }
 .range .slider-tooltip { white-space: nowrap; }
 
+/* Кружки марок одной лентой со всеми марками (app.js добавляет остальные и листает колесом мыши).
+   Ширина кружка как у колонки сетки оригинала: 4 на экране от 900 px, 6 от 1250 px. Поля сверху и снизу —
+   чтобы увеличение кружка при наведении не обрезалось. Уже 900 px — сетка оригинала из популярных. */
+@media screen and (min-width: 900px) {
+  .marks-popular-list.js-marks-strip {
+    display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none;
+    padding: 12px 8px; margin: -12px -8px; overscroll-behavior-x: contain;
+  }
+  .marks-popular-list.js-marks-strip::-webkit-scrollbar { display: none; }
+  .marks-popular-list.js-marks-strip > .marks-popular-list__item { flex: 0 0 calc((100% - 3 * 40px) / 4); height: auto; }
+}
+@media screen and (min-width: 1250px) {
+  .marks-popular-list.js-marks-strip > .marks-popular-list__item { flex-basis: calc((100% - 5 * 40px) / 6); }
+}
+@media screen and (max-width: 899px) { .marks-popular-list .js-mark-extra { display: none; } }
+
 /* Карта в блоке контактов */
 .contacts__map-frame { display: block; width: 100%; height: 100%; min-height: 410px; border: 0; }
 @media (max-width: 949px) { .contacts__map-frame { min-height: 0; aspect-ratio: 1 / 1; height: auto; } }

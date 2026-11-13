@@ -110,8 +110,9 @@
     show(0);
   });
 
-  /* «Показать все» у кружков марок (главная и меню) раскрывает на месте все марки, как у оригинала.
-     Список с логотипами грузится по первому нажатию из /api/marks, а не лежит в каждой странице. */
+  /* Кружки марок (главная и меню) — лента всех марок: сначала популярные из разметки, следом остальные
+     из /api/marks, когда лента на экране. Колесо мыши листает её влево-вправо, у краёв — снова страницу.
+     На узком экране (меньше 900 px) лента не нужна: там сетка из популярных, как у оригинала. */
   var allMarks = null;
   function loadMarks() {
     if (!allMarks) allMarks = fetch(SITE.base + "/api/marks").then(function (r) {
@@ -123,32 +124,50 @@
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
   }
-  $$(".js-marks-toggle").forEach(function (b) {
-    var list = $(".marks-popular-list", b.parentNode);
-    if (!list) return;
-    var short = list.innerHTML;
-    b.addEventListener("click", function () {
-      if (b.getAttribute("aria-expanded") === "true") {
-        var y = b.getBoundingClientRect().top;
-        list.innerHTML = short;
-        b.setAttribute("aria-expanded", "false");
-        b.textContent = "Показать все";
-        window.scrollBy(0, b.getBoundingClientRect().top - y);   /* свернули снизу — кнопка остаётся под курсором */
-        return;
-      }
-      b.disabled = true;
+  function markTile(m) {
+    return '<a href="' + SITE.base + "/new/" + esc(m.slug) + '" class="marks-popular-list__item card-border js-mark-extra" data-slug="' +
+      esc(m.slug) + '"><div class="card-border-helper"></div><span class="marks-popular-list__item__logo nuxt-icon nuxt-icon--fill">' +
+      m.svg + '</span><span class="marks-popular-list__item__title">' + esc(m.title) + "</span></a>";
+  }
+  var wideScreen = window.matchMedia ? window.matchMedia("(min-width: 900px)") : { matches: true };
+  function wheelStrip(list) {
+    var target = null, last = 0;
+    list.addEventListener("wheel", function (e) {
+      if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;   /* масштаб и тачпад вбок — как обычно */
+      var max = list.scrollWidth - list.clientWidth;
+      if (max < 2) return;
+      var now = Date.now();
+      var from = target !== null && now - last < 400 ? target : list.scrollLeft;
+      var tiles = list.children, step = tiles.length > 1 ? tiles[1].offsetLeft - tiles[0].offsetLeft : 200;
+      /* колесо мыши — щелчок на кружок, тачпад — плавно на сколько провели */
+      var notch = e.deltaMode !== 0 || Math.abs(e.deltaY) >= 50;
+      var to = Math.max(0, Math.min(max, from + (notch ? (e.deltaY > 0 ? step : -step) : e.deltaY)));
+      if (Math.abs(to - from) < 1) return;   /* уже у края ленты — колесо крутит страницу */
+      e.preventDefault();
+      target = to;
+      last = now;
+      list.scrollTo({ left: to, behavior: notch ? "smooth" : "auto" });
+    }, { passive: false });
+  }
+  $$(".js-marks-strip").forEach(function (list) {
+    var filled = false;
+    function fill() {
+      if (filled || !wideScreen.matches) return;
+      filled = true;
       loadMarks().then(function (marks) {
-        list.innerHTML = marks.map(function (m) {
-          return '<a href="' + SITE.base + "/new/" + esc(m.slug) + '" class="marks-popular-list__item card-border">' +
-            '<div class="card-border-helper"></div><span class="marks-popular-list__item__logo nuxt-icon nuxt-icon--fill">' +
-            m.svg + '</span><span class="marks-popular-list__item__title">' + esc(m.title) + "</span></a>";
-        }).join("");
-        b.setAttribute("aria-expanded", "true");
-        b.textContent = "Показать меньше";
-      }, function () {
-        location.href = SITE.base + "/new";   /* список не загрузился — все марки есть в каталоге */
-      }).then(function () { b.disabled = false; });
-    });
+        var have = {};
+        $$("[data-slug]", list).forEach(function (a) { have[a.getAttribute("data-slug")] = true; });
+        list.insertAdjacentHTML("beforeend", marks.filter(function (m) { return !have[m.slug]; }).map(markTile).join(""));
+      }, function () { filled = false; });
+    }
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        if (entries.some(function (x) { return x.isIntersecting; })) fill();
+      }).observe(list);
+    }
+    list.addEventListener("pointerenter", fill);
+    list.addEventListener("focusin", fill);
+    wheelStrip(list);
   });
 
   /* фото в карточке меняются при наведении на полоски, как у оригинала */
