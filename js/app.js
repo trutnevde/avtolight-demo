@@ -110,6 +110,47 @@
     show(0);
   });
 
+  /* «Показать все» у кружков марок (главная и меню) раскрывает на месте все марки, как у оригинала.
+     Список с логотипами грузится по первому нажатию из /api/marks, а не лежит в каждой странице. */
+  var allMarks = null;
+  function loadMarks() {
+    if (!allMarks) allMarks = fetch(SITE.base + "/api/marks").then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).catch(function (e) { allMarks = null; throw e; });
+    return allMarks;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+  }
+  $$(".js-marks-toggle").forEach(function (b) {
+    var list = $(".marks-popular-list", b.parentNode);
+    if (!list) return;
+    var short = list.innerHTML;
+    b.addEventListener("click", function () {
+      if (b.getAttribute("aria-expanded") === "true") {
+        var y = b.getBoundingClientRect().top;
+        list.innerHTML = short;
+        b.setAttribute("aria-expanded", "false");
+        b.textContent = "Показать все";
+        window.scrollBy(0, b.getBoundingClientRect().top - y);   /* свернули снизу — кнопка остаётся под курсором */
+        return;
+      }
+      b.disabled = true;
+      loadMarks().then(function (marks) {
+        list.innerHTML = marks.map(function (m) {
+          return '<a href="' + SITE.base + "/new/" + esc(m.slug) + '" class="marks-popular-list__item card-border">' +
+            '<div class="card-border-helper"></div><span class="marks-popular-list__item__logo nuxt-icon nuxt-icon--fill">' +
+            m.svg + '</span><span class="marks-popular-list__item__title">' + esc(m.title) + "</span></a>";
+        }).join("");
+        b.setAttribute("aria-expanded", "true");
+        b.textContent = "Показать меньше";
+      }, function () {
+        location.href = SITE.base + "/new";   /* список не загрузился — все марки есть в каталоге */
+      }).then(function () { b.disabled = false; });
+    });
+  });
+
   /* фото в карточке меняются при наведении на полоски, как у оригинала */
   $$(".js-brazzers").forEach(function (a) {
     var imgs = [];
