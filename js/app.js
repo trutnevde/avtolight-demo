@@ -82,6 +82,7 @@
       $$("li", dots).forEach(function (li, i) { li.classList.toggle("is-current", i === Math.min(c, n - 1)); });
       nav.hidden = n < 2;
       dots.hidden = n < 2 || n > 8;   /* у длинных лент (банки) точек нет, как у оригинала */
+      root.classList.toggle("is-nodots", dots.hidden);   /* без ряда точек стрелки по центру плиток */
     }
     prev.addEventListener("click", function () { vp.scrollBy({ left: -step() }); });
     next.addEventListener("click", function () { vp.scrollBy({ left: step() }); });
@@ -590,6 +591,44 @@
     if (q.get("sort")) { sortKey = q.get("sort"); sorts.forEach(function (s) { s.value = sortKey; }); }
     apply(false);
   }
+
+  /* ---------- сортировка: кнопки-таблетки вместо системного списка (его окно не оформить стилями) ----------
+     Список остаётся в разметке скрытым: кнопка выбирает в нём пункт и шлёт change, а дальше работает прежняя
+     логика — переход с ?sort= на сервере, сортировка в браузере в демо, порядок моделей на странице марки. */
+  $$("select.js-sort, select.js-folder-sort").forEach(function (sel) {
+    var box = sel.closest(".select");
+    if (!box) return;
+    var pills = document.createElement("div");
+    pills.className = "lh-sort";
+    pills.setAttribute("role", "radiogroup");
+    pills.setAttribute("aria-label", "Сортировка");
+    function sync() {
+      $$(".lh-sort__item", pills).forEach(function (b) {
+        var on = b.getAttribute("data-value") === sel.value;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+    }
+    Array.prototype.forEach.call(sel.options, function (o) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "lh-sort__item";
+      b.setAttribute("role", "radio");
+      b.setAttribute("data-value", o.value);
+      b.textContent = o.textContent.trim();
+      b.addEventListener("click", function () {
+        if (sel.value === o.value) return;
+        sel.value = o.value;
+        sync();
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      pills.appendChild(b);
+    });
+    box.parentNode.insertBefore(pills, box);
+    box.classList.add("lh-sort-native");
+    sel.addEventListener("change", sync);
+    sync();
+  });
 
   /* ---------- cookies ---------- */
   var cookie = $(".js-cookie");

@@ -46,7 +46,7 @@
 
   /* ---------- страница марки: сортировка моделей по цене (у оригинала выбор скрыт стилями) ---------- */
   var folderSort = $(".js-folder-sort"), folderGrid = $(".js-folder-grid");
-  if (folderSort && folderGrid) folderSort.addEventListener("change", function () {
+  function sortFolders() {
     var dir = folderSort.value === "desc" ? -1 : 1;
     function price(card) { return +card.getAttribute("data-price") || 0; }
     /* карточки — прямые потомки сетки, какой бы ни была их разметка; модели без цены всегда в конце */
@@ -57,7 +57,11 @@
         return dir * (pa - pb);
       })
       .forEach(function (card) { folderGrid.appendChild(card); });
-  });
+  }
+  if (folderSort && folderGrid) {
+    folderSort.addEventListener("change", sortFolders);
+    sortFolders();   /* выбранный порядок («Сначала дешевле») сразу, а не порядок выдачи API */
+  }
 
   /* ---------- модель и автомобиль: цена, бонусы, кнопки заявок ---------- */
   var car = $(".js-car");
