@@ -598,6 +598,13 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 @media (max-width: 899px) { .page-banner { margin: 0 12px; border-radius: 30px; } .benefits__line { grid-template-columns: 1fr; } }
 /* форма в три шага под баннером — белая панель */
 .form-new { background: #fff; border-radius: var(--lh-r-lg); padding: 36px 36px 28px; }
+/* выбранная машина в кредите, рассрочке и trade-in: у оригинала колонки ровно 570 и 510 px (1120 с зазором),
+   в нашей карточке места меньше, и «Базовая цена» вылезала за край. Колонки резиновые, цены переносятся. */
+@media (min-width: 900px) {
+  .form__car-block { grid-template-columns: minmax(0, 57fr) minmax(0, 51fr) !important; }
+  .form__car-block__content { min-width: 0; }
+  .form__offer__price { flex-wrap: wrap; gap: 16px 28px; }
+}
 .form-new .select__item, .form-new .input input, .form-new input[name=name], .form-new input[name=phone] { background: var(--lh-bg) !important; }
 .bonuses__price-benefit__text::first-letter { text-transform: uppercase; }
 .folders__item-complectation-about, .folders__item-complectation-info { background: none !important; }
