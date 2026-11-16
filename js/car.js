@@ -48,8 +48,14 @@
   var folderSort = $(".js-folder-sort"), folderGrid = $(".js-folder-grid");
   if (folderSort && folderGrid) folderSort.addEventListener("change", function () {
     var dir = folderSort.value === "desc" ? -1 : 1;
-    $$(".mini-card", folderGrid)
-      .sort(function (a, b) { return dir * ((+a.getAttribute("data-price") || 0) - (+b.getAttribute("data-price") || 0)); })
+    function price(card) { return +card.getAttribute("data-price") || 0; }
+    /* карточки — прямые потомки сетки, какой бы ни была их разметка; модели без цены всегда в конце */
+    Array.prototype.slice.call(folderGrid.children)
+      .sort(function (a, b) {
+        var pa = price(a), pb = price(b);
+        if (!pa || !pb) return (pa ? 0 : 1) - (pb ? 0 : 1);
+        return dir * (pa - pb);
+      })
       .forEach(function (card) { folderGrid.appendChild(card); });
   });
 

@@ -505,6 +505,8 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .select--native .select__item:disabled, .select-wrapper--no-data .select__item { background: rgba(255, 255, 255, .55) !important; color: var(--lh-ink-3) !important; }
 .select__item-default { font-family: var(--lh-font); font-weight: 600; color: var(--lh-ink); background: transparent; }
 .catalog__sort .select, .catalog__controls .select { background: #fff; border-radius: var(--lh-r-sm); padding: 0 14px; height: 48px; display: flex; align-items: center; }
+/* у подборки два выбора сортировки, как в разметке оригинала; он прячет «дешевле/дороже», оставляем полный */
+.wrapper--sets-set .catalog__controls { display: none; }
 .catalog__sort .select:after, .catalog__sort .select:before { display: none; }
 .range__input { border: 0 !important; border-radius: var(--lh-r-sm) !important; height: 54px !important; background: #fff !important; font-family: var(--lh-font); font-weight: 600; }
 .slider-connect { background: var(--lh-green) !important; }
