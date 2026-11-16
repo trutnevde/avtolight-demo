@@ -133,7 +133,7 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .header--menu-open .lh-menu { display: block; }
 /* колонка не шире экрана: иначе сетка растягивается под ленту моделей, карусель не листается,
    а «Весь каталог» справа от «Марок» уезжает за край */
-.lh-menu__in { padding-top: 26px; padding-bottom: 34px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 30px; }
+.lh-menu__in { padding-top: 26px; padding-bottom: 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 30px; }
 .lh-menu__in > * { min-width: 0; }
 .lh-menu__nav { display: none; }
 .lh-menu__title { margin: 0 0 16px; font-family: var(--lh-head); font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
@@ -261,6 +261,9 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 /* ---------- карусели (стрелки и точки добавляет app.js) ---------- */
 .lh-carousel { position: relative; --f-carousel-spacing: 16px; --f-carousel-slide-width: 300px; }
 .lh-carousel .f-carousel__track { display: flex; }
+/* область прокрутки режет всё за своими краями: тень карточки при наведении обрезалась снизу ровным срезом.
+   Запас под тень и подъём карточки, а отрицательный margin возвращает вёрстку на место */
+.lh-carousel .f-carousel__viewport { padding: 8px 0 48px; margin: -8px 0 -48px; }
 .lh-carousel .f-carousel__slide { flex: 0 0 var(--f-carousel-slide-width); width: var(--f-carousel-slide-width); margin-right: var(--f-carousel-spacing); }
 /* у оригинала положение стрелок задано с !important (.is-horizontal .f-carousel__nav .f-button…), перебиваем точнее */
 .lh-carousel.is-horizontal .f-carousel__nav { position: static !important; width: auto !important; }
@@ -277,7 +280,8 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .lh-carousel .f-button.is-next::before { transform: rotate(-45deg); margin-right: 4px; }
 .lh-carousel .f-button:hover:not([disabled]) { background: var(--lh-green); }
 .lh-carousel .f-button[disabled] { opacity: 0; pointer-events: none; }
-.lh-carousel .f-carousel__dots { display: flex; justify-content: center; gap: 6px; margin: 22px 0 0; padding: 0; list-style: none; position: static; }
+/* отступ точек — padding: margin схлопнулся бы с отрицательным margin области прокрутки (запас под тень) */
+.lh-carousel .f-carousel__dots { display: flex; justify-content: center; gap: 6px; margin: 0; padding: 22px 0 0; list-style: none; position: static; }
 .lh-carousel .f-carousel__dots button { display: block; padding: 6px 0; border: 0; background: none; }
 .lh-carousel .f-carousel__dot { display: block; width: 8px; height: 8px; border-radius: 8px; background: #cfd5cc; transition: width .2s, background .2s; }
 .lh-carousel .is-current .f-carousel__dot { width: 28px; background: var(--lh-green); }
