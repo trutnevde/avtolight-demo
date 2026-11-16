@@ -37,6 +37,14 @@
   burgers.forEach(function (b) {
     b.addEventListener("click", function () { toggleMenu(); });
   });
+  /* клик мимо меню и шапки закрывает меню; сам клик странице под ним не достаётся (не откроет ссылку) */
+  document.addEventListener("click", function (e) {
+    if (!header.classList.contains("header--menu-open") || header.contains(e.target)) return;
+    if (e.target.closest && e.target.closest(".modal")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    toggleMenu(false);
+  }, true);
 
   /* ---------- карусели ---------- */
   function initCarousel(root) {
