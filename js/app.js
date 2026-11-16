@@ -31,6 +31,8 @@
     });
     document.body.classList.toggle("menu-is-open", open);
     onScroll();
+    /* карусель моделей в меню считала стрелки, пока меню было скрыто: пересчитать сейчас */
+    if (open) document.dispatchEvent(new CustomEvent("lh-menu-open"));
   }
   burgers.forEach(function (b) {
     b.addEventListener("click", function () { toggleMenu(); });
@@ -52,7 +54,7 @@
     root.appendChild(dots);
     var prev = $(".is-prev", nav), next = $(".is-next", nav);
     function step() { return slides[0].getBoundingClientRect().width || vp.clientWidth; }
-    function pages() { return Math.max(1, Math.round((vp.scrollWidth - vp.clientWidth) / step()) + 1); }
+    function pages() { return step() ? Math.max(1, Math.round((vp.scrollWidth - vp.clientWidth) / step()) + 1) : 1; }
     function current() { return Math.round(vp.scrollLeft / step()); }
     function renderDots() {
       var n = pages();
@@ -76,7 +78,10 @@
     prev.addEventListener("click", function () { vp.scrollBy({ left: -step() }); });
     next.addEventListener("click", function () { vp.scrollBy({ left: step() }); });
     vp.addEventListener("scroll", function () { window.requestAnimationFrame(update); }, { passive: true });
-    window.addEventListener("resize", renderDots);
+    /* пересчёт и при показе: карусель в закрытом меню получает размеры, только когда меню откроют */
+    if (window.ResizeObserver) new ResizeObserver(function () { renderDots(); }).observe(vp);
+    else window.addEventListener("resize", renderDots);
+    if (root.closest(".lh-menu")) document.addEventListener("lh-menu-open", renderDots);
     renderDots();
   }
   $$(".js-carousel").forEach(initCarousel);

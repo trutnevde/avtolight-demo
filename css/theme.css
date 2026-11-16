@@ -131,7 +131,10 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .lh-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--lh-bg); border-top: 1px solid var(--lh-line);
   box-shadow: 0 40px 70px -40px rgba(13, 20, 16, .6); max-height: calc(100vh - var(--lh-header-h)); overflow: auto; overscroll-behavior: contain; }
 .header--menu-open .lh-menu { display: block; }
-.lh-menu__in { padding-top: 26px; padding-bottom: 34px; display: grid; gap: 30px; }
+/* колонка не шире экрана: иначе сетка растягивается под ленту моделей, карусель не листается,
+   а «Весь каталог» справа от «Марок» уезжает за край */
+.lh-menu__in { padding-top: 26px; padding-bottom: 34px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 30px; }
+.lh-menu__in > * { min-width: 0; }
 .lh-menu__nav { display: none; }
 .lh-menu__title { margin: 0 0 16px; font-family: var(--lh-head); font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
 .lh-menu__row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -561,8 +564,16 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .folders__item-complectation { background: #fff !important; border: 0 !important; border-radius: 22px !important; }
 .folders__item-complectation-title { font-family: var(--lh-head) !important; text-transform: none !important; letter-spacing: -.02em; }
 .folders__item-complectation-price-actual { font-family: var(--lh-head); }
-.folders__item-modification-title-wrapper, .offer__equipment-tab, .folders__item-modifications-tech { border-radius: var(--lh-r-sm) !important; }
-.offer__equipment-tab { font-family: var(--lh-font) !important; font-weight: 650 !important; text-transform: none !important; }
+.folders__item-modifications-tech { border-radius: var(--lh-r-sm) !important; }
+/* модификации и «Экстерьер / Интерьер» — таблетки: белые, выбранная залита зелёным целиком.
+   Скругление ленты не ставим: она прокручивается и обрезала бы края кнопок. */
+.folders__item-modification-title-wrapper, .offer__equipment-tabs--media { gap: 8px !important; padding-top: 2px; }
+.folders__item-modification-title, .offer__equipment-tab { background: #fff !important; border: 0 !important; border-radius: 999px !important;
+  padding: 12px 20px !important; color: var(--lh-ink) !important; opacity: 1 !important; font-family: var(--lh-font) !important;
+  font-size: 16px !important; font-weight: 650 !important; text-transform: none !important; transition: background-color .2s, color .2s !important; }
+.folders__item-modification-title:hover, .offer__equipment-tab:not(.offer__equipment-tab--active):hover { background: var(--lh-tint-mint) !important; }
+.folders__item-modification-title.folders__item-modification-title--selected, .offer__equipment-tab--active,
+.offer__equipment-tab--active:hover { background: var(--lh-green) !important; color: #fff !important; }
 .offer__dimensions-table, .calculator { border-radius: var(--lh-r-lg); }
 
 /* баннер «Автокредит», «Рассрочка», «Trade-In»: зелёный блок без фото оригинала */
