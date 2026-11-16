@@ -608,7 +608,17 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .form-new .select__item, .form-new .input input, .form-new input[name=name], .form-new input[name=phone] { background: var(--lh-bg) !important; }
 .bonuses__price-benefit__text::first-letter { text-transform: uppercase; }
 .folders__item-complectation-about, .folders__item-complectation-info { background: none !important; }
-.form-new__block:before { font-family: var(--lh-head) !important; color: var(--lh-green) !important; }
+/* шаг 3 (ФИО, телефон) — fieldset, а у оригинала fieldset наследует отступы формы: у них 0, у нашей
+   карточки 36 px, поля съезжали вправо-вниз от цифры «3» */
+.form-new fieldset { padding: 0 !important; }
+/* цифры шагов: у оригинала слева за краем формы, у нас за краем белой карточки — переносим внутрь,
+   по центру первой строки полей своего шага (поле 54 px) */
+@media (min-width: 900px) {
+  .form-new.form-new--decor { padding-left: 100px; }
+  .form-new.form-new--decor .form-new__block:after, .form-new.form-new--decor .form-new__block.form-new__block--1:after {
+    right: calc(100% + 32px) !important; top: 0 !important; width: 40px; text-align: center;
+    font-family: var(--lh-head) !important; font-size: 40px !important; line-height: 54px !important; color: var(--lh-green) !important; }
+}
 
 /* подборки */
 .sets .sets__item, .sets__item { border-radius: var(--lh-r-lg) !important; background: var(--lh-tint-mint) !important; }
