@@ -20,18 +20,21 @@
   }
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
-  var burger = $(".js-burger");
+  /* «Каталог» на компьютере и бургер на телефоне открывают одно меню */
+  var burgers = $$(".js-burger");
   function toggleMenu(open) {
     open = open === undefined ? !header.classList.contains("header--menu-open") : open;
     header.classList.toggle("header--menu-open", open);
-    burger.classList.toggle("burger--open", open);
+    burgers.forEach(function (b) {
+      b.classList.toggle("burger--open", open);
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+    });
     document.body.classList.toggle("menu-is-open", open);
     onScroll();
   }
-  if (burger) {
-    burger.addEventListener("click", function () { toggleMenu(); });
-    burger.addEventListener("keydown", function (e) { if (e.key === "Enter") toggleMenu(); });
-  }
+  burgers.forEach(function (b) {
+    b.addEventListener("click", function () { toggleMenu(); });
+  });
 
   /* ---------- карусели ---------- */
   function initCarousel(root) {
@@ -124,10 +127,10 @@
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
   }
+  /* та же разметка, что mark_tile в templates/_macros.html */
   function markTile(m) {
-    return '<a href="' + SITE.base + "/new/" + esc(m.slug) + '" class="marks-popular-list__item card-border js-mark-extra" data-slug="' +
-      esc(m.slug) + '"><div class="card-border-helper"></div><span class="marks-popular-list__item__logo nuxt-icon nuxt-icon--fill">' +
-      m.svg + '</span><span class="marks-popular-list__item__title">' + esc(m.title) + "</span></a>";
+    return '<a href="' + SITE.base + "/new/" + esc(m.slug) + '" class="lh-mark js-mark-extra" data-slug="' + esc(m.slug) +
+      '"><span class="lh-mark__logo">' + m.svg + '</span><span class="lh-mark__name">' + esc(m.title) + "</span></a>";
   }
   var wideScreen = window.matchMedia ? window.matchMedia("(min-width: 900px)") : { matches: true };
   function wheelStrip(list) {
@@ -168,6 +171,27 @@
     list.addEventListener("pointerenter", fill);
     list.addEventListener("focusin", fill);
     wheelStrip(list);
+  });
+
+  /* первый экран: машины слайдов оригинала сменяются каждые 6 с, точки переключают, наведение — пауза */
+  $$(".js-hero-cars").forEach(function (root) {
+    var cars = $$(".lh-hero__car", root), dots = $$(".lh-hero__dot", root);
+    if (cars.length < 2) return;
+    var i = 0, timer = 0;
+    function show(k) {
+      i = (k + cars.length) % cars.length;
+      cars.forEach(function (c, n) {
+        c.classList.toggle("is-on", n === i);
+        c.setAttribute("aria-hidden", n === i ? "false" : "true");
+        c.tabIndex = n === i ? 0 : -1;
+      });
+      dots.forEach(function (d, n) { d.classList.toggle("is-on", n === i); });
+    }
+    function play() { clearInterval(timer); timer = setInterval(function () { show(i + 1); }, 6000); }
+    dots.forEach(function (d, n) { d.addEventListener("click", function () { show(n); play(); }); });
+    root.addEventListener("mouseenter", function () { clearInterval(timer); });
+    root.addEventListener("mouseleave", play);
+    if (!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) play();
   });
 
   /* фото в карточке меняются при наведении на полоски, как у оригинала */
@@ -250,7 +274,7 @@
   };
   /* «Оплатим дорогу» и «Подарок на выбор» — окно с текстом; остальные — форма заявки со своим заголовком и кнопкой */
   function openPromo(tile) {
-    var h = $(".services__title", tile);
+    var h = $(".js-promo-title, .services__title", tile);
     var name = h ? h.textContent.trim() : "";
     var p = PROMOS[name.toLowerCase()];
     if (!p) return false;
@@ -266,7 +290,7 @@
   }
 
   document.addEventListener("click", function (e) {
-    var tile = e.target.closest(".services__item");
+    var tile = e.target.closest(".js-promo, .services__item");
     if (tile && openPromo(tile)) { e.preventDefault(); return; }
     var b = e.target.closest("[data-modal]");
     if (b) { e.preventDefault(); openModal(b.getAttribute("data-modal"), b); return; }
@@ -274,7 +298,18 @@
     /* щелчок мимо окна: окно и его обёртка занимают весь экран поверх подложки */
     else if (e.target.classList.contains("modal") || e.target.classList.contains("modal__window")) closeModal();
   });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeModal(); toggleMenu(false); } });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { closeModal(); toggleMenu(false); }
+    /* плитки акций — div с role=button: открываются и с клавиатуры */
+    if (e.key === "Enter" && e.target.classList && e.target.classList.contains("js-promo")) { e.preventDefault(); e.target.click(); }
+  });
+  /* формы поиска по GET (подбор на главной): пустые поля в адрес не кладём */
+  $$(".js-clean-get").forEach(function (f) {
+    f.addEventListener("submit", function () {
+      $$("select, input", f).forEach(function (el) { if (el.name && !el.value) el.disabled = true; });
+      setTimeout(function () { $$("select, input", f).forEach(function (el) { el.disabled = false; }); }, 0);
+    });
+  });
 
   /* ---------- телефон и отправка заявок ---------- */
   function maskPhone(input) {
@@ -489,7 +524,7 @@
     var form = $(".js-filter");
     var grid = $("#catalog .catalog__grid");
     if (!form || !grid) return;
-    var cards = $$(".mini-card", grid);
+    var cards = $$(".js-car", grid);
     var empty = $(".js-static-empty");
     var sorts = $$(".js-sort");
     var sortKey = "new";
