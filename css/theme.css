@@ -423,9 +423,14 @@ a.lh-topbar__item:hover { color: var(--lh-ink); }
 .js-lead-form .form__control { margin-bottom: 10px; }
 .js-lead-form .modal__form-p, .js-lead-form .text__p { font-size: 15px; color: var(--lh-ink-2); }
 .js-lead-form button[type=submit] { height: 54px; border-radius: var(--lh-r-sm); }
-.checkbox__label { gap: 10px; margin-top: 10px; font-size: 13px; line-height: 1.4; color: var(--lh-ink-2); align-items: flex-start; }
-.checkbox__custom { width: 18px; min-width: 18px; height: 18px; margin-top: 1px; border: 1.5px solid var(--lh-ink-3); border-radius: 6px; background: #fff; }
-.checkbox__custom:after { width: 10px; height: 10px; border-radius: 3px; background: var(--lh-green); }
+/* согласия: крупная галочка — зелёный квадрат с белой галочкой, по центру строки текста */
+.checkbox__label { gap: 12px; margin-top: 10px; font-size: 14px; line-height: 1.35; color: var(--lh-ink-2); align-items: center !important; }
+.checkbox__text { margin-left: 0 !important; font-size: 14px !important; color: var(--lh-ink-2) !important; }
+.checkbox__custom { width: 22px; min-width: 22px; height: 22px; margin: 0; border: 2px solid #b9c2b5; border-radius: 7px; background: #fff; transition: background-color .15s, border-color .15s; }
+.checkbox__custom:after { width: 6px !important; height: 11px !important; border-radius: 0 !important; background: none !important;
+  border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: translate(-50%, -62%) rotate(45deg) !important; }
+input[type=checkbox]:checked + .checkbox__custom { background: var(--lh-green); border-color: var(--lh-green); }
+input[type=checkbox]:focus-visible + .checkbox__custom { outline: 2px solid var(--lh-green); outline-offset: 2px; }
 .checkbox__text a, .checkbox__privacy-text { color: var(--lh-green); }
 
 /* кнопки оригинала — новой формой */
