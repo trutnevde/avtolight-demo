@@ -592,6 +592,24 @@
     apply(false);
   }
 
+  /* ---------- поиск в первом экране: бюджеты ниже самой дешёвой машины марки не предлагаем ---------- */
+  $$(".js-hero-mark").forEach(function (mark) {
+    var budget = $(".js-hero-budget", mark.form);
+    if (!budget) return;
+    function sync() {
+      var opt = mark.options[mark.selectedIndex];
+      var min = +(opt && opt.getAttribute("data-min")) || 0;
+      Array.prototype.forEach.call(budget.options, function (o) {
+        var off = !!o.value && +o.value < min;
+        o.hidden = off;
+        o.disabled = off;
+      });
+      if (budget.selectedOptions[0] && budget.selectedOptions[0].disabled) budget.value = "";
+    }
+    mark.addEventListener("change", sync);
+    sync();
+  });
+
   /* ---------- сортировка: кнопки-таблетки вместо системного списка (его окно не оформить стилями) ----------
      Список остаётся в разметке скрытым: кнопка выбирает в нём пункт и шлёт change, а дальше работает прежняя
      логика — переход с ?sort= на сервере, сортировка в браузере в демо, порядок моделей на странице марки. */
